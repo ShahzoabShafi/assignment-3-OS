@@ -2,7 +2,7 @@ CC = gcc
 framesize ?= 18
 varmemsize ?= 10
 
-CFLAGS = -Wall -Wextra -std=c11 -DFRAME_STORE_SIZE=$(framesize) -DVAR_STORE_SIZE=$(varmemsize) -pthread
+CFLAGS = -Wall -Wextra -std=c11 -g -D_DEFAULT_SOURCE -DFRAME_STORE_SIZE=$(framesize) -DVAR_STORE_SIZE=$(varmemsize) -pthread
 OBJS = shell.o interpreter.o shellmemory.o pcb.o queue.o schedule_policy.o program.o
 
 mysh: $(OBJS)

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 1. Stay in current directory (where source files are)
+# 1. Move into the src directory context
 cd "$(dirname "$0")"
 
 # 2. Define variables
 EXECUTABLE="./mysh"
-TEST_DIR="./A3-test-cases"
+TEST_DIR="../test-cases"
 OUTPUT_DIR="./my_results"
 BACKING_STORE="./backing_store"
 
@@ -95,7 +95,7 @@ for test_file in "${test_files[@]}"; do
 
     # Copy program files from test directory
     echo "Copying test programs..."
-    cp "$TEST_DIR"/prog* . 2>/dev/null
+    cp "$TEST_DIR"/prog[0-9]* . 2>/dev/null
     
     # Show what we're about to run
     echo "Running: $EXECUTABLE < $test_file"
