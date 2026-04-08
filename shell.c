@@ -6,8 +6,7 @@
 #include "shell.h"
 #include "interpreter.h"
 #include "shellmemory.h"
-
-
+#define _POSIX_C_SOURCE 200809L
 
 // Start of everything
 int main(int argc, char *argv[]) {

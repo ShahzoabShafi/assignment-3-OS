@@ -45,6 +45,7 @@
 *.su
 *.idb
 *.pdb
+*.log
 
 # Typical build folders (optional, uncomment if you use them)
 # bin/
