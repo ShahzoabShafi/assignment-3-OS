@@ -30,4 +30,5 @@ program.o: program.c program.h shell.h shellmemory.h
 	$(CC) $(CFLAGS) -c program.c
 
 clean:
-	rm -f mysh *.o
+	rm -f mysh *.o backing_store/* prog*
+	rmdir backing_store 2>/dev/null || true

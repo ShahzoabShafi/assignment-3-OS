@@ -27,6 +27,12 @@ total=0
 echo "Starting COMP 310 Assignment 3 Test Suite..."
 echo "-------------------------------------------"
 
+# Initial cleanup
+echo "Performing initial cleanup..."
+make clean > /dev/null 2>&1
+rm -f prog* 2>/dev/null
+rm -rf "$BACKING_STORE" 2>/dev/null
+
 # Check if any test files exist
 shopt -s nullglob
 test_files=("$TEST_DIR"/tc*.txt)
@@ -56,19 +62,26 @@ for test_file in "${test_files[@]}"; do
         continue
     fi
 
+    echo ""
+    echo "=========================================="
+    echo "Running $test_name"
+    echo "=========================================="
+
     # Clean up everything before starting
-    echo "Cleaning for $test_name..."
+    echo "Cleaning..."
     make clean > /dev/null 2>&1
     rm -f prog* 2>/dev/null
     rm -rf "$BACKING_STORE" 2>/dev/null
-    rm -f mysh 2>/dev/null
 
     # Recompile with appropriate parameters
-    echo "Compiling for $test_name with $compile_params..."
+    echo "Compiling with $compile_params..."
     make mysh $compile_params > "$compile_log" 2>&1
+    COMPILE_STATUS=$?
     
-    if [ $? -ne 0 ]; then
-        echo "[ FAIL ] $test_name (compilation failed - see $compile_log)"
+    if [ $COMPILE_STATUS -ne 0 ]; then
+        echo "[ FAIL ] $test_name (compilation failed)"
+        echo "See compilation errors in: $compile_log"
+        cat "$compile_log"
         failed=$((failed + 1))
         continue
     fi
@@ -81,14 +94,20 @@ for test_file in "${test_files[@]}"; do
     fi
 
     # Copy program files from test directory
+    echo "Copying test programs..."
     cp "$TEST_DIR"/prog* . 2>/dev/null
+    
+    # Show what we're about to run
+    echo "Running: $EXECUTABLE < $test_file"
 
     # Run the shell in batch mode
     "$EXECUTABLE" < "$test_file" > "$actual_output" 2>&1
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -ne 0 ]; then
-        echo "[ FAIL ] $test_name (program crashed with exit code $EXIT_CODE - see $actual_output)"
+        echo "[ FAIL ] $test_name (program crashed with exit code $EXIT_CODE)"
+        echo "Output before crash:"
+        head -20 "$actual_output"
         failed=$((failed + 1))
         continue
     fi
@@ -96,13 +115,13 @@ for test_file in "${test_files[@]}"; do
     MATCH=0
 
     # Compare outputs (whitespace and case insensitive)
-    if [ -f "$expected_result" ]; then
-        diff -wbB "$actual_output" "$expected_result" > /dev/null 2>&1 && MATCH=1
-    else
+    if [ ! -f "$expected_result" ]; then
         echo "[ FAIL ] $test_name (expected result file not found: $expected_result)"
         failed=$((failed + 1))
         continue
     fi
+
+    diff -wbB "$actual_output" "$expected_result" > /dev/null 2>&1 && MATCH=1
 
     if [ $MATCH -eq 1 ]; then
         # TEST PASSED: Delete the output file to keep folder clean
@@ -112,16 +131,23 @@ for test_file in "${test_files[@]}"; do
         passed=$((passed + 1))
     else
         # TEST FAILED: Keep the file for manual inspection
-        echo "[ FAIL ] $test_name (output mismatch - see $actual_output)"
+        echo "[ FAIL ] $test_name (output mismatch)"
+        echo ""
+        echo "Expected output (first 20 lines):"
+        head -20 "$expected_result"
+        echo ""
+        echo "Actual output (first 20 lines):"
+        head -20 "$actual_output"
+        echo ""
+        echo "Full diff saved. To see differences, run:"
+        echo "  diff -u $expected_result $actual_output"
         failed=$((failed + 1))
     fi
-
-    # Clean up program files after each test
-    rm -f prog* 2>/dev/null
-    rm -rf "$BACKING_STORE" 2>/dev/null
 done
 
 # Final cleanup
+echo ""
+echo "Performing final cleanup..."
 rm -f prog* 2>/dev/null
 rm -rf "$BACKING_STORE" 2>/dev/null
 
@@ -130,11 +156,19 @@ if [ -z "$(ls -A "$OUTPUT_DIR" 2>/dev/null)" ]; then
     rmdir "$OUTPUT_DIR"
 fi
 
-echo "-------------------------------------------"
+echo ""
+echo "==========================================="
 echo "Test Summary:"
+echo "==========================================="
 echo "Total Tests Run: $total"
 echo "Tests Passed:    $passed"
 echo "Tests Failed:    $failed"
+echo ""
 
 score=$((passed * 16))
 echo "Estimated Score: $score / 80"
+echo ""
+
+if [ $failed -gt 0 ]; then
+    echo "Failed test outputs are in: $OUTPUT_DIR"
+fi
