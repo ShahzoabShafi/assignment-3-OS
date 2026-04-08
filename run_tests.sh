@@ -30,7 +30,7 @@ echo "-------------------------------------------"
 # Initial cleanup
 echo "Performing initial cleanup..."
 make clean > /dev/null 2>&1
-rm -f prog* 2>/dev/null
+rm -f prog[0-9] prog[0-9][0-9] 2>/dev/null
 rm -rf "$BACKING_STORE" 2>/dev/null
 
 # Check if any test files exist
@@ -70,7 +70,7 @@ for test_file in "${test_files[@]}"; do
     # Clean up everything before starting
     echo "Cleaning..."
     make clean > /dev/null 2>&1
-    rm -f prog* 2>/dev/null
+    rm -f prog[0-9] prog[0-9][0-9] 2>/dev/null
     rm -rf "$BACKING_STORE" 2>/dev/null
 
     # Recompile with appropriate parameters
@@ -148,7 +148,7 @@ done
 # Final cleanup
 echo ""
 echo "Performing final cleanup..."
-rm -f prog* 2>/dev/null
+rm -f prog[0-9] prog[0-9][0-9] 2>/dev/null
 rm -rf "$BACKING_STORE" 2>/dev/null
 
 # Step 3: Remove the results folder if it is empty (all tests passed)
